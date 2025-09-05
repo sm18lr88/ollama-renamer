@@ -2,7 +2,11 @@
 
 Interactive, safe “rename” for Ollama models. Under the hood it **copies** a model to a new name, then (optionally) **deletes** the original.
 
+<img width="598" height="154" alt="image" src="https://github.com/user-attachments/assets/0d7b870c-aadf-4c7d-80f9-5c2eceb51582" />
+
+
 ## Features
+- Alpha software: use at your own risk.
 - Lists local models, fuzzy-pick one, suggests a short clean name.
 - Copy → optional delete (i.e., move). Checks if model is loaded before delete.
 - Overwrite guard (interactive prompt or `--overwrite` flag).
@@ -10,7 +14,7 @@ Interactive, safe “rename” for Ollama models. Under the hood it **copies** a
 - Windows & Linux.
 
 ## Requirements
-- Ollama installed and running (`OLLAMA_HOST` honored, defaults to `http://127.0.0.1:11434`).
+- Ollama installed.
 - Rust toolchain (for building from source).
 
 ## Install (Windows)
@@ -32,9 +36,7 @@ install -Dm755 target/release/ollama-rename ~/.local/bin/ollama-rename
 
 Interactive (recommended):
 
-```bash
-ollama-rename
-```
+Double-click the resulting .exe you built. That simple.
 
 Non-interactive:
 
@@ -50,3 +52,4 @@ ollama-rename rename --from "gpt-oss:latest" --to "gpt-oss" --overwrite
 ```
 
 Useful flags: `--host <URL>`, `--use-cli-fallback`, `--force` (delete even if loaded), `--dry-run`.
+
