@@ -78,5 +78,8 @@ Useful flags: `--host <URL>`, `--use-cli-fallback`, `--force` (delete even if lo
 - Test (with mocks): `cargo test`
 - Release build: `cargo build --release`
 
+## Platform notes
+- The Ollama CLI path can be overridden with `OLLAMA_BIN` (helps when Ollama is installed in a custom location or a path with spaces).
+
 
 

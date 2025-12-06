@@ -8,6 +8,7 @@ use serde_json::{json, Value};
 use std::collections::HashSet;
 use std::env;
 use std::io::{self, Read};
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::thread;
 use std::time::Duration;
@@ -677,7 +678,7 @@ fn ensure_ollama_is_running(client: &Client, base: &str) -> Result<()> {
         style("Ollama API not responsive. Checking CLI...").yellow()
     );
 
-    match Command::new("ollama").arg("--version").output() {
+    match ollama_command().arg("--version").output() {
         Ok(_) => {
             println!(
                 "{}",
@@ -723,15 +724,15 @@ fn start_ollama_service() -> Result<()> {
         {
             return Ok(());
         }
-        // Fallback: spawn a new window running `ollama serve`
-        Command::new("cmd")
-            .args(["/C", "start", "ollama", "serve"])
+        // Fallback: directly spawn `ollama serve` (respects OLLAMA_BIN path)
+        ollama_command()
+            .arg("serve")
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .spawn()
             .context("Failed to start Ollama on Windows.")?;
     } else {
-        Command::new("ollama")
+        ollama_command()
             .arg("serve")
             .stdout(Stdio::null())
             .stderr(Stdio::null())
@@ -826,7 +827,7 @@ fn delete_model(client: &Client, base: &str, name: &str, use_cli_fallback: bool)
 }
 
 fn cli_copy(from: &str, to: &str) -> Result<()> {
-    let status = Command::new("ollama")
+    let status = ollama_command()
         .args(["cp", from, to])
         .status()
         .context("Failed to invoke `ollama` binary")?;
@@ -837,7 +838,7 @@ fn cli_copy(from: &str, to: &str) -> Result<()> {
 }
 
 fn cli_rm(name: &str) -> Result<()> {
-    let status = Command::new("ollama")
+    let status = ollama_command()
         .args(["rm", name])
         .status()
         .context("Failed to invoke `ollama` binary")?;
@@ -923,11 +924,28 @@ fn model_exists(client: &Client, base: &str, name: &str) -> Result<bool> {
     Ok(list.iter().any(|m| m.name == name))
 }
 
+fn ollama_path() -> PathBuf {
+    if let Ok(path) = env::var("OLLAMA_BIN") {
+        PathBuf::from(path)
+    } else if cfg!(target_os = "windows") {
+        PathBuf::from("ollama.exe")
+    } else {
+        PathBuf::from("ollama")
+    }
+}
+
+fn ollama_command() -> Command {
+    Command::new(ollama_path())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use httpmock::prelude::*;
     use std::env;
+    use std::sync::Mutex;
+
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
 
     /// RAII helper to temporarily set an env var and restore it on drop.
     struct EnvOverride {
@@ -977,6 +995,7 @@ mod tests {
 
     #[test]
     fn pick_base_url_prefers_cli_value() {
+        let _lock = ENV_LOCK.lock().unwrap();
         let _guard = EnvOverride::new("OLLAMA_HOST", "10.0.0.2:11434");
         assert_eq!(pick_base_url(Some("1.2.3.4:9999")), "http://1.2.3.4:9999");
     }
@@ -1042,5 +1061,22 @@ mod tests {
         let set = running_model_names(&client, server.base_url().as_str()).unwrap();
         assert!(set.contains("one"));
         assert!(set.contains("two"));
+    }
+
+    #[test]
+    fn ollama_path_respects_env() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        let _guard = EnvOverride::new("OLLAMA_BIN", "/custom/bin/ollama");
+        assert_eq!(ollama_path(), PathBuf::from("/custom/bin/ollama"));
+    }
+
+    #[test]
+    fn ollama_path_has_platform_default() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        env::remove_var("OLLAMA_BIN");
+        #[cfg(target_os = "windows")]
+        assert_eq!(ollama_path(), PathBuf::from("ollama.exe"));
+        #[cfg(not(target_os = "windows"))]
+        assert_eq!(ollama_path(), PathBuf::from("ollama"));
     }
 }
