@@ -1,0 +1,9 @@
+target/
+**/*.pdb
+**/*.log
+/.idea/
+/.vscode/
+/.DS_Store
+*.exe
+*.dll
+
