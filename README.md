@@ -1,6 +1,6 @@
 # ollama-rename
 
-Interactive, safe "rename" for Ollama models. Under the hood it **copies** a model to a new name, then (optionally) **deletes** the original.
+An interactive, safe "rename" for Ollama models. Under the hood it **copies** a model to a new name, then (optionally) **deletes** the original.
 
 <img width="598" height="154" alt="image" src="https://github.com/user-attachments/assets/0d7b870c-aadf-4c7d-80f9-5c2eceb51582" />
 
@@ -8,11 +8,11 @@ Interactive, safe "rename" for Ollama models. Under the hood it **copies** a mod
 ## Features
 - Alpha software: use at your own risk.
 - Fuzzy-pick a model, get a clean suggested name, and copy it safely.
-- Copy + optional delete (i.e., move) with running-model guard and `--yes` auto-confirm.
-- New subcommands: `list` (pretty or `--output json`) and `doctor` (health/version check).
-- JSON output for scripting via `--output json`; CLI fallback via `--use-cli-fallback`.
-- Uses Ollama APIs (`/api/copy`, `/api/delete`, `/api/tags`, `/api/ps`, `/api/version`) with CLI fallbacks.
-- Windows & Linux.
+- Copy, or copy and then delete the original (i.e., move). A guard protects running models, and `--yes` auto-confirms.
+- New subcommands: `list` (pretty, or `--output json`) and `doctor` (health/version check).
+- JSON output for scripting via `--output json`. `--use-cli-fallback` switches to the CLI fallback.
+- Calls the Ollama APIs (`/api/copy`, `/api/delete`, `/api/tags`, `/api/ps`, `/api/version`) and falls back to the CLI.
+- Runs on Windows and Linux.
 
 ## Requirements
 - Ollama installed.
@@ -24,7 +24,7 @@ Double-click `install.bat` or run:
 .\install.bat
 ```
 
-It builds the binary and places it in `%USERPROFILE%\bin` (adds to PATH if needed).
+It builds the binary and places it in `%USERPROFILE%\bin`. It adds that folder to PATH if needed.
 
 ## Install (Linux, from source)
 
@@ -79,7 +79,4 @@ Useful flags: `--host <URL>`, `--use-cli-fallback`, `--force` (delete even if lo
 - Release build: `cargo build --release`
 
 ## Platform notes
-- The Ollama CLI path can be overridden with `OLLAMA_BIN` (helps when Ollama is installed in a custom location or a path with spaces).
-
-
-
+- You can override the Ollama CLI path with `OLLAMA_BIN`. This helps when Ollama is installed in a custom location or in a path with spaces.
